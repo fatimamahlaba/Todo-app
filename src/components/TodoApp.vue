@@ -28,7 +28,7 @@
         <tr v-for="(task, index) in tasks" :key="index">
           <td>
             <span :class="{ 'line-through': task.status === 'finished' }">
-              {{ task.name }}
+              {{ capitalizeFirstChar(task.name) }}
             </span>
           </td>
           <td>
@@ -71,69 +71,55 @@ export default {
   },
   data() {
     return {
+      STORAGE_KEY: "todo-app-storage",
       task: "",
       editedTask: null,
       statuses: ["to-do", "in-progress", "finished"],
-      /* Status could be: 'to-do' / 'in-progress' / 'finished' */
-      tasks: [
-        {
-          name: "To-do App",
-          status: "to-do",
-        },
-        {
-          name: "Cooking",
-          status: "to-do",
-        },
-        {
-          name: "Create YouTube video.",
-          status: "to-do",
-        },
-      ],
+      //  Status could be: 'to-do' / 'in-progress' / 'finished' in the input
+      tasks: [],
     };
   },
+  created() {
+    this.tasks = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || "[]");
+    console.log(this.tasks);
+  },
   methods: {
-    /**
-     * Capitalize first character
-     */
+    // Capitalize first character
     capitalizeFirstChar(str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     },
-    /**
-     * Change status of task by index
-     */
+    // change status bar
     changeStatus(index) {
       let newIndex = this.statuses.indexOf(this.tasks[index].status);
       if (++newIndex > 2) newIndex = 0;
       this.tasks[index].status = this.statuses[newIndex];
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
     },
-    /**
-     * Deletes task by index
-     */
+    // delete task
     deleteTask(index) {
       this.tasks.splice(index, 1);
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
     },
-    /**
-     * Edit task
-     */
+    // add task
     editTask(index) {
       this.task = this.tasks[index].name;
       this.editedTask = index;
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
     },
-    /**
-     * Add / Update task
-     */
+    // add & update task
     submitTask() {
       if (this.task.length === 0) return;
-      /* We need to update the task */
+      //  update the task
       if (this.editedTask != null) {
         this.tasks[this.editedTask].name = this.task;
         this.editedTask = null;
       } else {
-        /* We need to add new task */
+        //  add new task
         this.tasks.push({
           name: this.task,
           status: "new entry",
         });
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
       }
       this.task = "";
     },
